@@ -44,7 +44,6 @@ target_link_libraries(myproject refprop)
 
 # Set output and build directories
 set_target_properties(myproject PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
-set(CMAKE_BINARY_DIR "${CMAKE_SOURCE_DIR}/build")
 
 # ---- Configure Microsoft Visual Studio ----------------
 if(MSVC)

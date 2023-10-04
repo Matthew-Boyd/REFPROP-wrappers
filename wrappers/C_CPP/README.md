@@ -18,9 +18,9 @@ Installation
 8. Run CMake from this directory to generate the build files.
    1. For Visual Studio on Windows, this can be accomplished by creating and running the following batch file (e.g., `build.bat`).
       ```
-      rmdir /Q/S build
-      mkdir build
-      cd build
+      rmdir /Q/S build_windows
+      mkdir build_windows
+      cd build_windows
    
       cmake -G "Visual Studio 17 2022" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" ..
    
