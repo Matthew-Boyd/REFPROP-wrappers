@@ -3,10 +3,14 @@
 #include <limits>
 
 template<typename T>
-constexpr T NaN = std::numeric_limits<T>::quiet_NaN();      // simplify quiet_NaN()
+constexpr T NaN() {
+    return std::numeric_limits<T>::quiet_NaN();      // simplify quiet_NaN()
+}
 
 template<typename T>
-constexpr T inf = std::numeric_limits<T>::infinity();       // simplify infinity()
+constexpr T inf() {
+    return std::numeric_limits<T>::infinity();       // simplify infinity()
+}
 
 bool file_exists(const std::string& filename);
 

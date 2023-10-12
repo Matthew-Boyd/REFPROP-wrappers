@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <memory>
 #include "manyso/native.h"
 #include "REFPROP_lib.h"
 #include "fluid_codes.h"
@@ -41,7 +42,7 @@ public:
         std::vector<double> z;
 
         LibInputs() : hFld(""), hIn(""), hOut(""), iUnits(Units::_from_index(0)), iMass(Basis::_from_index(0)),
-            iFlag(-1), a(NaN<double>), b(NaN<double>), z({}) {}
+            iFlag(-1), a(NaN<double>()), b(NaN<double>()), z({}) {}
     };
 
     struct LibOutputs {
@@ -68,9 +69,9 @@ public:
         int ierr;
         std::string herr;
 
-        LibOutputs() : Output({}), hUnits(""), iUCode(-1), iUCodeArray({}), T(NaN<double>), P(NaN<double>), D(NaN<double>),
-            Dl(NaN<double>), Dv(NaN<double>), x({}), y({}), x3({}), q(NaN<double>), e(NaN<double>),
-            h(NaN<double>), s(NaN<double>), Cv(NaN<double>), Cp(NaN<double>), w(NaN<double>), ierr(-1), herr("") {}
+        LibOutputs() : Output({}), hUnits(""), iUCode(-1), iUCodeArray({}), T(NaN<double>()), P(NaN<double>()), D(NaN<double>()),
+            Dl(NaN<double>()), Dv(NaN<double>()), x({}), y({}), x3({}), q(NaN<double>()), e(NaN<double>()),
+            h(NaN<double>()), s(NaN<double>()), Cv(NaN<double>()), Cp(NaN<double>()), w(NaN<double>()), ierr(-1), herr("") {}
     };
 
     RefpropV10::LibOutputs RefpropLib(RefpropV10::LibInputs inputs);
@@ -82,7 +83,6 @@ public:
     int SetupLib(const FluidData& fluid_data);
 
 private:
-    const AbstractSharedLibraryWrapper::load_method kLoadMethod_ = AbstractSharedLibraryWrapper::load_method::FROM_FILE;
     std::unique_ptr<NativeSharedLibraryWrapper> lib_wrap_;
     std::string abs_path_dll_;                         // path and file name
 };

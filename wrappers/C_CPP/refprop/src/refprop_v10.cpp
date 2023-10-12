@@ -6,8 +6,23 @@
 #include "refprop_v10.h"
 #include "utils.h"
 
+#ifdef _WIN32
+    const AbstractSharedLibraryWrapper::load_method kLoadMethod_ = AbstractSharedLibraryWrapper::load_method::FROM_FILE;
+    #ifdef _WIN64
+        const char* kRefpropLib = "REFPRP64.DLL";
+    #else
+        const char* kRefpropLib = "REFPROP.DLL";
+    #endif
+#elif __linux__
+    const AbstractSharedLibraryWrapper::load_method kLoadMethod_ = AbstractSharedLibraryWrapper::load_method::LOAD_LIBRARY;
+    const char* kRefpropLib = "librefprop.so";
+#elif __APPLE__
+    throw std::runtime_error("MacOS not supported here.");
+#else
+    throw std::runtime_error("Unrecognized operating system.");
+#endif
+
 const char* kRefpropEnv = "RPprefix";               // environment variable holding REFPROP path
-const char* kRefpropLib = "REFPRP64.DLL";           // REFPROP library
 
 // Constants for C calls
 const int kHerrLength = 255;                        // length of output error strings
@@ -36,7 +51,7 @@ RefpropV10::RefpropV10()
     }
     
     // Wrap refprop library via manyso to manage memory
-    lib_wrap_ = std::make_unique<NativeSharedLibraryWrapper>(abs_path_dll_, kLoadMethod_);
+    lib_wrap_ = std::unique_ptr<NativeSharedLibraryWrapper>(new NativeSharedLibraryWrapper(abs_path_dll_, kLoadMethod_));
 
     // Set path to fluid data
     std::string dll_path_string = parent_path(abs_path_dll_);
@@ -60,16 +75,16 @@ RefpropV10::LibOutputs RefpropV10::RefpropLib(RefpropV10::LibInputs inputs) {
     double x[kNumComp];                                     // composition of the liquid phase of each component
     double y[kNumComp];                                     // composition of the vapor phase of each component
     double x3[kNumComp];                                    // composition of a second liquid phase of each component
-    double q = NaN<double>;                                 // vapor quality
+    double q = NaN<double>();                               // vapor quality
     int ierr = -1;                                          // error flag
     char herr[kHerrLength];                                 // error string
 
     // Initialize the above C-style array outputs
-    std::fill_n(Output, kNumOutputs, NaN<double>);
+    std::fill_n(Output, kNumOutputs, NaN<double>());
     std::fill_n(hUnits, kHunitsLength, '\0');
-    std::fill_n(x, kNumComp, NaN<double>);
-    std::fill_n(y, kNumComp, NaN<double>);
-    std::fill_n(x3, kNumComp, NaN<double>);
+    std::fill_n(x, kNumComp, NaN<double>());
+    std::fill_n(y, kNumComp, NaN<double>());
+    std::fill_n(x3, kNumComp, NaN<double>());
     std::fill_n(herr, kHerrLength, '\0');
 
     // Call subroutine
@@ -105,8 +120,8 @@ RefpropV10::LibOutputs RefpropV10::RefpropLib(RefpropV10::LibInputs inputs) {
     // Cleanly format 'Output' values
     std::vector<double> output(std::begin(Output), std::end(Output));                       // convert Output array to vector
     while (!output.empty() && output.back() == kNothingCalculated) { output.pop_back(); }   // remove trailing not-calculated values
-    std::replace(output.begin(), output.end(), kNothingCalculated, NaN<double>);            // replace other 'not-calculated' with NaN
-    std::replace(output.begin(), output.end(), kErrorOccurred, -inf<double>);               // replace error values with -infinity
+    std::replace(output.begin(), output.end(), kNothingCalculated, NaN<double>());          // replace other 'not-calculated' with NaN
+    std::replace(output.begin(), output.end(), kErrorOccurred, -inf<double>());             // replace error values with -infinity
 
     // Populate output structure
     RefpropV10::LibOutputs outputs;
@@ -131,26 +146,26 @@ RefpropV10::LibOutputs RefpropV10::AbflshLib(RefpropV10::LibInputs inputs)
     // TODO: combine enum flags
     
     // Declare outputs
-    double T = NaN<double>;                                 // [K] temperature
-    double P = NaN<double>;                                 // [kPa] pressure
-    double D = NaN<double>;                                 // [mol/L or kg/m3] density
-    double Dl = NaN<double>;                                // [mol/L or kg/m3] density of the liquid phase
-    double Dv = NaN<double>;                                // [mol/L or kg/m3] density of the vapor phase
+    double T = NaN<double>();                               // [K] temperature
+    double P = NaN<double>();                               // [kPa] pressure
+    double D = NaN<double>();                               // [mol/L or kg/m3] density
+    double Dl = NaN<double>();                              // [mol/L or kg/m3] density of the liquid phase
+    double Dv = NaN<double>();                              // [mol/L or kg/m3] density of the vapor phase
     double x[kNumComp];                                     // composition of the liquid phase of each component
     double y[kNumComp];                                     // composition of the vapor phase of each component
-    double q = NaN<double>;                                 // vapor quality on a molar basis
-    double e = NaN<double>;                                 // [J/mol or kJ/kg] internal energy
-    double h = NaN<double>;                                 // [J/mol or kJ/kg] enthalpy
-    double s = NaN<double>;                                 // [J/mol-K or kJ/kg-K] entropy
-    double Cv = NaN<double>;                                // [J/mol-K or kJ/kg-K] isochoric heat capacity
-    double Cp = NaN<double>;                                // [J/mol-K or kJ/kg-K] isobaric heat capacity
-    double w = NaN<double>;                                 // [m/s] speed of sound
+    double q = NaN<double>();                               // vapor quality on a molar basis
+    double e = NaN<double>();                               // [J/mol or kJ/kg] internal energy
+    double h = NaN<double>();                               // [J/mol or kJ/kg] enthalpy
+    double s = NaN<double>();                               // [J/mol-K or kJ/kg-K] entropy
+    double Cv = NaN<double>();                              // [J/mol-K or kJ/kg-K] isochoric heat capacity
+    double Cp = NaN<double>();                              // [J/mol-K or kJ/kg-K] isobaric heat capacity
+    double w = NaN<double>();                               // [m/s] speed of sound
     int ierr = -1;                                          // error flag
     char herr[kHerrLength];                                 // error string
 
     // Initialize the above C-style array outputs
-    std::fill_n(x, kNumComp, NaN<double>);
-    std::fill_n(y, kNumComp, NaN<double>);
+    std::fill_n(x, kNumComp, NaN<double>());
+    std::fill_n(y, kNumComp, NaN<double>());
     std::fill_n(herr, kHerrLength, '\0');
 
     // Call subroutine
@@ -224,7 +239,7 @@ RefpropV10::LibOutputs RefpropV10::AllPropsLib(RefpropV10::LibInputs inputs)
     char herr[kHerrLength];                                 // error string
 
     // Initialize the above C-style array outputs
-    std::fill_n(Output, kNumOutputs, NaN<double>);
+    std::fill_n(Output, kNumOutputs, NaN<double>());
     std::fill_n(hUnitsArray, kHunitsArrayLength, '\0');
     std::fill_n(iUCodeArray, kNumOutputs, -1);
     std::fill_n(herr, kHerrLength, '\0');
@@ -251,8 +266,8 @@ RefpropV10::LibOutputs RefpropV10::AllPropsLib(RefpropV10::LibInputs inputs)
     // Cleanly format 'Output' values
     std::vector<double> output(std::begin(Output), std::end(Output));                       // convert output array to vector
     while (!output.empty() && output.back() == kNothingCalculated) { output.pop_back(); }   // remove trailing not-calculated values
-    std::replace(output.begin(), output.end(), kNothingCalculated, NaN<double>);            // replace other 'not-calculated' with NaN
-    std::replace(output.begin(), output.end(), kErrorOccurred, -inf<double>);               // replace error values with -infinity
+    std::replace(output.begin(), output.end(), kNothingCalculated, NaN<double>());          // replace other 'not-calculated' with NaN
+    std::replace(output.begin(), output.end(), kErrorOccurred, -inf<double>());             // replace error values with -infinity
 
     // Populate output structure
     RefpropV10::LibOutputs outputs;

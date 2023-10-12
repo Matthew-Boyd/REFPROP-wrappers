@@ -29,21 +29,24 @@ endif()
 FetchContent_Populate(manyso)
 include_directories("${MANYSO_SOURCE_DIR}/include")
 
-# ---- Add MemoryModule ----------------
-set(MEMORYMODULE_DIR "${MANYSO_SOURCE_DIR}/externals/MemoryModule")
-add_library (MemoryModule STATIC
-  ${MEMORYMODULE_DIR}/MemoryModule.c
-  ${MEMORYMODULE_DIR}/MemoryModule.h
-)
-set_target_properties(MemoryModule PROPERTIES LINKER_LANGUAGE C)
-target_include_directories(MemoryModule PUBLIC
-  ${MEMORYMODULE_DIR}
-  "${MANYSO_SOURCE_DIR}/include"
-)
-target_compile_options(MemoryModule PUBLIC
-  $<$<CONFIG:Debug>:/MDd>
-  $<$<CONFIG:Release>:/MD>
-)
+
+if(WIN32)
+  # ---- Add MemoryModule ----------------
+  set(MEMORYMODULE_DIR "${MANYSO_SOURCE_DIR}/externals/MemoryModule")
+  add_library (MemoryModule STATIC
+    ${MEMORYMODULE_DIR}/MemoryModule.c
+    ${MEMORYMODULE_DIR}/MemoryModule.h
+  )
+  set_target_properties(MemoryModule PROPERTIES LINKER_LANGUAGE C)
+  target_include_directories(MemoryModule PUBLIC
+    ${MEMORYMODULE_DIR}
+    "${MANYSO_SOURCE_DIR}/include"
+  )
+  target_compile_options(MemoryModule PUBLIC
+    $<$<CONFIG:Debug>:/MDd>
+    $<$<CONFIG:Release>:/MD>
+  )
+endif()
 
 # ---- Add REFPROP v10 ----------------
 # Specify header and source directories
@@ -62,9 +65,12 @@ add_library(refprop ${HEADER_FILES} ${SOURCE_FILES})
 target_include_directories(refprop PUBLIC
   ${HEADER_DIR}
   ${HEADER_DIR}/${PROJECT_NAME}
+  "${MANYSO_SOURCE_DIR}/include"
 )
 
 # Link libraries
-target_link_libraries(refprop PUBLIC
-  MemoryModule
-)
+if(WIN32)
+  target_link_libraries(refprop PUBLIC
+    MemoryModule
+  )
+endif()
